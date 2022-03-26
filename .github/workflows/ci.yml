@@ -1,0 +1,45 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+concurrency:
+  group: ci-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      id: cache-node_modules
+      with:
+        key: node_modules-${{ runner.os }}-${{ hashFiles('yarn.lock', 'example/yarn.lock') }}
+        path: node_modules example/node_modules
+    - uses: actions/setup-node@v3
+      id: setup-node
+      with:
+        node-version-file: .nvmrc
+    - name: install dependencies
+      if: steps.cache-node_modules.outputs.cache-hit != 'true'
+      run: |
+        yarn install --frozen-lockfile
+        (cd example && yarn install --frozen-lockfile)
+      env:
+        CI: true
+    - run: yarn lint
+    - run: yarn build
+    - run: yarn test --coverage
+      env:
+        CI: true
+    - name: Ensure GIT is clean after everything is done
+      uses: numtide/clean-git-action@v1
