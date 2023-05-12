@@ -30,6 +30,22 @@ const createFormatValue = (
   return jsonFormatValue;
 };
 
+const renderComponent = <T>(
+  component: React.ComponentType<T>,
+  props: Record<string, unknown>,
+): JSX.Element => {
+  if ('children' in props) {
+    const { children, ...regularProps } = props;
+    return React.createElement(
+      component as React.ComponentType<{}>,
+      regularProps,
+      children as React.ReactNode[],
+    );
+  }
+
+  return React.createElement(component as React.ComponentType<{}>, props);
+};
+
 // required so can match, see React.memo()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default <T>(
@@ -116,6 +132,14 @@ export default <T>(
   ): JSX.Element => {
     const props = givenProps as Record<string, unknown>;
     const previousPropsRef = useRef(props as Record<string, unknown>);
+
+    if (
+      (typeof __DEV__ === 'boolean' && !__DEV__) ||
+      process.env.NODE_ENV === 'production'
+    ) {
+      return renderComponent(Component, props);
+    }
+
     if (previousPropsRef.current !== props) {
       const previousProps = previousPropsRef.current;
       const previousPropsKeys = new Set(Object.keys(previousProps));
@@ -145,16 +169,7 @@ export default <T>(
       previousPropsRef.current = props;
     }
 
-    if ('children' in props) {
-      const { children, ...regularProps } = props;
-      return React.createElement(
-        Component as React.ComponentType<{}>,
-        regularProps,
-        children as React.ReactNode[],
-      );
-    }
-
-    return React.createElement(Component as React.ComponentType<{}>, props);
+    return renderComponent(Component, props);
   };
   Wrapper.displayName = `withPropsChangeLogger(${displayName})`;
   return Wrapper;

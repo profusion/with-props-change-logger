@@ -15,7 +15,11 @@
     "skipLibCheck": true,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es2018"
+    "target": "es2018",
+    "typeRoots" : [
+      "./@types",
+      "./node_modules/@types"
+    ]
   },
   "files": [
     "src/index.ts",
