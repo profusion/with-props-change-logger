@@ -6,8 +6,9 @@ function component and track properties that changed.
 This is useful if you're building a memoized component but it keeps
 rendering and you want to know the property that is causing that.
 
-It's meant to be used during development, production builds should
-remove it.
+It's meant to be used during development, in production it's automatically disabled.
+
+> Note: Keep in mind that the `__DEV__` global var should be `true` or `process.env.NODE_ENV` should be `production`
 
 ## Example
 

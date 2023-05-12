@@ -16,6 +16,41 @@ afterEach(() => {
   consoleLogMock.mockRestore();
 });
 
+it.each([
+  { testCaseName: 'NODE_ENV', useDevVariable: true },
+  { testCaseName: '__DEV__', useDevVariable: false },
+])(
+  'should be disabled in prod - When $testCaseName is set',
+  ({ useDevVariable }) => {
+    const oldValue = process.env.NODE_ENV;
+    try {
+      if (!useDevVariable) process.env.NODE_ENV = 'production';
+      else global.__DEV__ = false;
+      const Component = ({ txt }: { txt: string }): JSX.Element => (
+        <div>{txt}</div>
+      );
+      const TestComponent = withPropsChangeLogger(Component);
+      const { container, rerender } = render(<TestComponent txt="hello" />);
+      expect(container.firstChild).toMatchInlineSnapshot(`
+<div>
+  hello
+</div>
+`);
+      expect(consoleLogMock).not.toBeCalled();
+      rerender(<TestComponent txt="world" />);
+      expect(container.firstChild).toMatchInlineSnapshot(`
+<div>
+  world
+</div>
+`);
+      expect(consoleLogMock).not.toBeCalled();
+    } finally {
+      process.env.NODE_ENV = oldValue;
+      global.__DEV__ = true;
+    }
+  },
+);
+
 it('detect changes in simple components (without children): verbose', async () => {
   const SimpleComponent = ({
     b,
@@ -368,7 +403,7 @@ it('limits lengthy properties', async () => {
     prefix: '>>>',
     valueMaxDisplayLength: 10,
   });
-  const a = [];
+  const a: Array<number> = [];
   for (let i = 0; i < 10; i += 1) {
     a.push(i);
   }

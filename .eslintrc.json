@@ -17,7 +17,8 @@
     ],
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+        "__DEV__": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2019,
@@ -29,6 +30,7 @@
         }
     },
     "rules": {
+        "no-underscore-dangle": ["error", { "allow": ["__DEV__"] }],
         "import/no-extraneous-dependencies": ["error", {"devDependencies": ["src/__tests__/*"]}],
         "import/extensions": ["error", "never"],
         "@typescript-eslint/consistent-type-assertions": [
